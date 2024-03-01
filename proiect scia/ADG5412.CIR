@@ -1,0 +1,326 @@
+* ADG5412 SPICE Macro-model
+* Generic Desc:
+* Developed by: MPorley / ADGT
+* Revision History: 1.0 (05/2017)
+* Copyright 2017 by Analog Devices, Inc.
+*
+* Refer to http://www.analog.com/Analog_Root/static/techSupport/designTools/spiceModels/license/spice_general.html for License Statement. Use of this model 
+* indicates your acceptance of the terms and provisions in the License Statement.
+*
+* Begin Notes:
+* The model will work on Vdd/Vss from +12V single supply and +/-15V dual supply.
+* The model will give parametric specifications at +/-15V only. Please see datasheet page 3.
+*  
+* Not Modeled:
+*
+* Parameters modeled include:
+*	On Resistance
+*	Ton and Toff
+*	Off Isolation
+*	Crosstalk
+*	Supply Currents: Iss/Idd/IL
+*   Cs/Cd Off
+*   Bandwidth
+*   Charge Injection
+*
+* Connections
+*      1  = IN1
+*      2  = D1
+*      3  = S1
+*      4  = VSS
+*      5  = GND
+*      6  = S4
+*      7  = D4
+*      8  = IN4
+*      9  = IN3
+*      10 = D3
+*      11 = S3
+*      12 = NIC
+*      13 = VDD
+*      14 = S2
+*      15 = D2
+*      16 = IN2
+*****************
+
+.SUBCKT ADG5412 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+
+.MODEL VON VSWITCH(Von=5 Voff=0.8 Ron=0.001 Roff=1000000000000)
+.MODEL VOFF VSWITCH(Von=0.8 Voff=5 Ron=0.001 Roff=1000000000000)
+.MODEL VEN VSWITCH(Von=5 Voff=0.8 Ron=170000 Roff=80000)
+.MODEL DCLAMP D(IS=1E-15 IBV=1E-13)
+
+* TON/TOFF
+S6 104 115 104 5 VEN
+Ech1 104 5 VALUE = { IF(V(1)>=2, 5 , 0.8 ) }
+eV8A 115A 5 115 5 1
+C2 115 5 1e-012
+S1 18 17 115A 5 VON
+
+R5 51 2 8
+R4 109 26 0.001
+EV1 26 5 VALUE = { IF (((V(18)-V(2))>0) & ((V(18)-V(2))<=14),0.056*(V(2)-V(18))*(V(2)-V(18)), 0) }
+R3 109 122 0.001
+EV7 122 5 VALUE = { IF (((V(18)-V(2))<0) & ((V(18)-V(2))<-13.5) ,11+((V(2)-V(18)-13.5)*(-0.5)), 0) }
+R2 109 110 0.001
+EV6 110 5 VALUE = { IF (((V(18)-V(2))>0) & ((V(18)-V(2))>14),((23-((V(18)-V(2)-13)*1.8))*0.52), 0) }
+R1 109 117 0.001
+EV5 117 5 VALUE = { IF (((V(18)-V(2))<0) & ((V(18)-V(2))>=-13.5),0.06*(V(18)-V(2))*(V(18)-V(2)), 0) }
+RINA	109 5	1G
+EOUTA	51 6A	POLY(2) (109,5) (3A,5) 0 0 0 0 0.999/1000
+FCOPYA	5 3A	VSENSEA 1
+RSENSORA 3A 5	1K
+VSENSEA	6A 18	0
+
+*CS OFF/BANDWIDTH
+C1_S1 2 5 15e-012
+C1_D1 3 5 15e-012
+
+*CHARGE INJECTION
+R26 52 53 0.001
+Ech8 53 5 VALUE = { IF(V(115A)<4, 0 , 5 ) }
+R25 52 33 0.001
+Ech7 33 5 VALUE = { IF(V(1)>=2, 5 , 0 ) }
+S2 115A 54 52 5 VOFF
+R28 55 57 0.001
+Ech10 57 5 VALUE = { IF(V(115A)<4, 0 , 5 ) }
+R27 55 56 0.001
+Ech9 56 5 VALUE = { IF(V(1)>=2, 5 , 0 ) }
+S7 115A 58 55 5 VOFF
+C4A 54 2 9e-011
+C4 58 3 9e-011
+
+*PROTECTION DIODES
+D4 4 2 DCLAMP
+D3 2 13 DCLAMP
+D2 4 3 DCLAMP
+D1 3 13 DCLAMP
+
+*ON/OFF LEAKAGE CURRENT
+R8 3 5 1000000000
+Ech6 113 5 VALUE = { IF(V(1)>=2, 0.5, 0.05 ) }
+gI3 3 5 113 5 1e-009
+R7 2 5 1000000000
+Ech5 25 5 VALUE = { IF(V(1)>=2, 0.5, 0.05 ) }
+gI4 2 5 25 5 1e-009
+
+*IDD/ISS
+I2 13 5 45e-006
+I1 4 5 1e-009
+
+*OFF ISOLATION
+C3 3 2 2e-012
+
+*CROSSTALK
+C3_S1S4 3 6 1e-012
+C3_S1S3 3 11 1e-012
+C3_S4S3 6 11 1e-012
+C3_S3S2 11 14 1e-012
+C3_S2S1 14 3 1e-012
+C3_S2S4 14 6 1e-012
+
+*SUPPLY REQUIREMENT
+S5 17 3 27 5 VON
+Ech3 107 5 VALUE = { IF((V(4)>=-0.5 & (V(13)<=40 & V(13)>=9)), 5 , 0.01 ) }
+S4 107 27 107 5 VON
+Ech2 112 5 VALUE = { IF((V(4)<=-0.5 & V(4)>=-22) & (V(13)<=22 & V(13)>=9), 5 , 0.01 ) }
+S3 112 27 112 5 VON
+
+** SWITCH 2 **
+
+R12 32 15 8
+R11 28 44 0.001
+EV26 44 5 VALUE = { IF (((V(20)-V(15))>0) & ((V(20)-V(15))<=14),0.056*(V(15)-V(20))*(V(15)-V(20)), 0) }
+R10 28 46 0.001
+EV25 46 5 VALUE = { IF (((V(20)-V(15))<0) & ((V(20)-V(15))<-13.5),11+((V(15)-V(20)-13.5)*(-0.5)), 0) }
+R9 28 45 0.001
+EV3 45 5 VALUE = { IF (((V(20)-V(15))>0) & ((V(20)-V(15))>14),((23-((V(20)-V(15)-13)*1.8))*0.52), 0) }
+R6 28 43 0.001 
+EV2 43 5 VALUE = { IF (((V(20)-V(15))<0) & ((V(20)-V(15))>=-13.5),0.06*(V(20)-V(15))*(V(20)-V(15)), 0) }
+RINB	28 5	1G
+EOUTB	32 6B	POLY(2) (28,5) (3B,5) 0 0 0 0 0.999/1000
+FCOPYB	5 3B	VSENSEB 1
+RSENSORB 3B 5	1K
+VSENSEB	6B 20	0
+
+*TON/TOFF
+eV8B 85A 5 85 5 1
+S25 98 85 98 5 VEN
+Ech28 98 5 VALUE = { IF(V(16)>=2, 5 , 0.8 ) }
+C17 85 5 1e-012
+S21 20 19 85A 5 VON
+
+*CHARGE INJECTION
+R34 70 72 0.001
+Ech32 72 5 VALUE = { IF(V(85A)<4, 0 , 5 ) }
+R33 70 71 0.001
+Ech31 71 5 VALUE = { IF(V(16)>=2, 5 , 0 ) }
+S9 85A 74 70 5 VOFF
+R30 61 63 0.001
+Ech12 63 5 VALUE = { IF(V(85A)<4, 0 , 5 ) }
+R29 61 62 0.001
+Ech11 62 5 VALUE = { IF(V(16)>=2, 5 , 0 ) }
+S8 85A 73 61 5 VOFF
+C19 74 14 9e-011
+C19A 73 15 9e-011
+
+* PROTECTION DIODES
+D8 4 15 DCLAMP
+D7 15 13 DCLAMP
+D6 4 14 DCLAMP
+D5 14 13 DCLAMP
+
+*ON/OFF LEAKAGE CURRENT
+R40 14 5 1000000000 
+Ech30 103 5 VALUE = { IF(V(16)>=2, 0.05, 0.1 ) }
+gI20 14 5 103 5 1e-009
+R39 15 5 1000000000 
+Ech29 102 5 VALUE = { IF(V(16)>=2, 0.05, 0.1 ) }
+gI19 15 5 102 5 1e-009
+
+* OFF ISOLATION
+C18 14 15 2e-012
+
+*CD/CS OFF/BANDWIDTH
+C20_D2 15 5 15e-012
+C20_S2 14 5 15e-012
+
+* SUPPLY REQUIREMENT
+S24 19 14 87 5 VON
+Ech26 88 5 VALUE = { IF((V(4)>=-0.5 & (V(13)<=40 & V(13)>=9)), 5 , 0.01 ) }
+S23 88 87 88 5 VON
+Ech25 86 5 VALUE = { IF((V(4)<=-0.5 & V(4)>=-22) & (V(13)<=22 & V(13)>=9), 5 , 0.01 ) }
+S22 86 87 86 5 VON
+
+** SWITCH 3 **
+
+R17 36 10 8
+R16 29 35 0.001
+EV16 35 5 VALUE = { IF (((V(22)-V(10))>0) & ((V(22)-V(10))<=14),0.056*(V(10)-V(22))*(V(10)-V(22)), 0) }
+R15 29 30 0.001
+EV15 30 5 VALUE = { IF (((V(22)-V(10))<0) & ((V(22)-V(10))<-13.5),11+((V(10)-V(22)-13.5)*(-0.5)), 0) }
+R14 29 31 0.001
+EV14 31 5 VALUE = { IF (((V(22)-V(10))>0) & ((V(22)-V(10))>14),((23-((V(22)-V(10)-13)*1.8))*0.52), 0) }
+R13 29 42 0.001
+EV13 42 5 VALUE = { IF (((V(22)-V(10))<0) & ((V(22)-V(10))>=-13.5),0.06*(V(22)-V(10))*(V(22)-V(10)), 0) }
+RINC	29 5	1G
+EOUTC	36 6C	POLY(2) (29,5) (3C,5) 0 0 0 0 0.999/1000
+FCOPYC	5 3C	VSENSEC 1
+RSENSORC 3C 5	1K
+VSENSEC	6C 22	0
+
+* CHARGE INJECTION
+R38 80 82 0.001
+Ech36 82 5 VALUE = { IF(V(47A)<4, 0 , 5 ) }
+R37 80 81 0.001
+Ech35 81 5 VALUE = { IF(V(9)>=2, 5 , 0 ) }
+S26 47A 90 80 5 VOFF
+R36 75 77 0.001
+Ech34 77 5 VALUE = { IF(V(47A)<4, 0 , 5 ) }
+R35 75 76 0.001
+Ech33 76 5 VALUE = { IF(V(9)>=2, 5 , 0 ) }
+S10 47A 89 75 5 VOFF
+C11A 89 11 9e-011
+C11 90 10 9e-011
+
+* PROTECTION DIODES
+D12 4 10 DCLAMP
+D11 10 13 DCLAMP
+D10 4 11 DCLAMP
+D9 11 13 DCLAMP
+
+*ON/OFF LEAKAGE CURRENT
+R24 11 5 1000000000
+Ech18 65 5 VALUE = { IF(V(9)>=2, 0.5, 0.05 ) }
+gI12 11 5 65 5 1e-009
+R23 10 5 1000000000
+Ech17 64 5 VALUE = { IF(V(9)>=2, 0.5, 0.05 ) }
+gI11 10 5 64 5 1e-009
+
+*CS OFF/BANDWIDTH
+C12_D3 10 5 15e-012
+C12_S3 11 5 15e-012
+
+* OFF ISOLATION
+C10 11 10 2e-012
+
+* TON/TOFF
+eV8C 47A 5 47 5 1
+S15 60 47 60 5 VEN
+Ech16 60 5 VALUE = { IF(V(9)>=2, 5 , 0.8 ) }
+C9 47 5 1e-012
+S11 22 21 47A 5 VON
+
+* SUPPLY REQUIREMENT
+S14 21 11 49 5 VON
+Ech14 50 5 VALUE = { IF((V(4)>=-0.5 & (V(13)<=40 & V(13)>=9)), 5 , 0.01 ) }
+S13 50 49 50 5 VON
+Ech13 48 5 VALUE = { IF((V(4)<=-0.5 & V(4)>=-22) & (V(13)<=22 & V(13)>=9), 5 , 0.01 ) }
+S12 48 49 48 5 VON
+
+** SWITCH 4 **
+
+R22 39 7 8
+R21 34 40 0.001
+EV20 40 5 VALUE = { IF (((V(24)-V(7))>0) & ((V(24)-V(7))<=14),0.056*(V(7)-V(24))*(V(7)-V(24)), 0) }
+R20 34 37 0.001
+EV19 37 5 VALUE = { IF (((V(24)-V(7))<0) & ((V(24)-V(7))<-13.5),11+((V(7)-V(24)-13.5)*(-0.5)), 0) }
+R19 34 38 0.001
+EV18 38 5 VALUE = { IF (((V(24)-V(7))>0) & ((V(24)-V(7))>14),((23-((V(24)-V(7)-13)*1.8))*0.52), 0) }
+R18 34 41 0.001
+EV17 41 5 VALUE = { IF (((V(24)-V(7))<0) & ((V(24)-V(7))>=-13.5),0.06*(V(24)-V(7))*(V(24)-V(7)), 0) }
+RIND	34 5	1G
+EOUTD	39 6D	POLY(2) (34,5) (3D,5) 0 0 0 0 0.999/1000
+FCOPYD	5 3D	VSENSED 1
+RSENSORD 3D 5	1K
+VSENSED	6D 24	0
+
+* TON/TOFF
+eV8D 66A 5 66 5 1
+S20 79 66 79 5 VEN
+Ech22 79 5 VALUE = { IF(V(8)>=2, 5 , 0.8 ) }
+C13 66 5 1e-012
+S16 24 23 66A 5 VON
+
+* CHARGE INJECTION
+R44 94 96 0.001
+Ech40 96 5 VALUE = { IF(V(66A)<4, 0 , 5 ) }
+R43 94 95 0.001
+Ech39 95 5 VALUE = { IF(V(8)>=2, 5 , 0 ) }
+S28 66A 100 94 5 VOFF
+R42 91 93 0.001
+Ech38 93 5 VALUE = { IF(V(66A)<4, 0 , 5 ) }
+R41 91 92 0.001
+EBch37 92 5 VALUE = { IF(V(8)>=2, 5 , 0 ) }
+S27 66A 99 91 5 VOFF
+C6 99 6 9e-011
+C15 100 7 9e-011
+
+*PROTECTION DIODES
+D16 4 7 DCLAMP
+D15 7 13 DCLAMP
+D14 4 6 DCLAMP
+D13 6 13 DCLAMP
+
+* ON/OFF LEAKAGE CURRENT
+R32 6 5 1000000000
+Ech24 84 5 VALUE = { IF(V(8)>=2, 0.5, 0.05 ) }
+gI16 6 5 84 5 1e-009
+R31 7 5 1000000000
+Ech23 83 5 VALUE = { IF(V(8)>=2, 0.5, 0.05 ) }
+gI15 7 5 83 5 1e-009
+
+* CS OFF/BANDWIDTH
+C16_D4 7 5 15e-012
+C16_S4 6 5 15e-012
+
+* OFF ISOLATION
+C14 6 7 2e-012
+
+* SUPPLY REQUIREMENT
+S19 23 6 68 5 VON
+Ech20 69 5 VALUE = { IF((V(4)>=-0.5 & (V(13)<=40 & V(13)>=9)), 5 , 0.01 ) }
+S18 69 68 69 5 VON
+Ech19 67 5 VALUE = { IF((V(4)<=-0.5 & V(4)>=-22) & (V(13)<=22 & V(13)>=9), 5 , 0.01 ) }
+S17 67 68 67 5 VON
+
+.ENDS ADG5412

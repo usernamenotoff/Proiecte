@@ -1,0 +1,47 @@
+Circuit: * C:\Users\bode_\Desktop\proiect scia\AO_Neinversor.asc
+
+Direct Newton iteration for .op point succeeded.
+N-Period=1
+Fourier components of V(out)
+DC component:6.75866e-07
+
+Harmonic	Frequency	 Fourier 	Normalized	 Phase  	Normalized
+ Number 	  [Hz]   	Component	 Component	[degree]	Phase [deg]
+    1   	 4.000e+3	 1.071e-3	 1.000e+0	   92.34°	    0.00°
+    2   	 8.000e+3	 2.107e-6	 1.966e-3	   73.50°	  -18.84°
+    3   	 1.200e+4	 1.096e-5	 1.023e-2	  -80.38°	 -172.72°
+    4   	 1.600e+4	 9.505e-7	 8.872e-4	 -175.75°	 -268.09°
+    5   	 2.000e+4	 3.403e-6	 3.177e-3	  -38.66°	 -131.00°
+    6   	 2.400e+4	 7.372e-7	 6.881e-4	 -107.62°	 -199.96°
+    7   	 2.800e+4	 1.034e-6	 9.648e-4	   34.07°	  -58.27°
+    8   	 3.200e+4	 7.125e-7	 6.651e-4	   52.02°	  -40.32°
+    9   	 3.600e+4	 5.292e-7	 4.940e-4	   84.88°	   -7.46°
+   10   	 4.000e+4	 3.564e-7	 3.327e-4	 -158.37°	 -250.71°
+   11   	 4.400e+4	 3.906e-7	 3.646e-4	  148.93°	   56.59°
+   12   	 4.800e+4	 1.163e-6	 1.085e-3	  -71.14°	 -163.48°
+   13   	 5.200e+4	 2.813e-7	 2.626e-4	  -96.46°	 -188.80°
+   14   	 5.600e+4	 6.687e-7	 6.242e-4	    7.69°	  -84.65°
+   15   	 6.000e+4	 1.789e-7	 1.670e-4	  -34.37°	 -126.71°
+Partial Harmonic Distortion: 1.110494%
+Total Harmonic Distortion:   1.135848%
+
+
+
+Date: Thu Jan 11 14:17:29 2024
+Total elapsed time: 0.742 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 96562
+traniter = 96558
+tranpoints = 48280
+accept = 32702
+rejected = 15578
+matrix size = 17
+fillins = 8
+solver = Normal
+Avg thread counts: 1.0/1.0/1.0/1.0
+Matrix Compiler1: 1.17 KB object code size  0.5/0.4/[0.2]
+Matrix Compiler2: 1.90 KB object code size  0.7/0.4/[0.2]
+
